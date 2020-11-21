@@ -22,6 +22,12 @@ suppressPackageStartupMessages({
         library(maptools)
         library(viridis)
 })
+#upload datasets for each sensor
+AQY_AA_199_SG_CITY_OFFICE <- read_excel("~/CEHAT Clinic/AQY AA-199 SG CITY OFFICE.xlsx", skip = 5)
+AQY_AA_200_SG_PARK <- read_excel("~/CEHAT Clinic/AQY AA-200 SG PARK.xlsx", skip = 5)
+AQY_AA_202_SG_CITY_HALL <- read_excel("~/CEHAT Clinic/AQY AA-202 SG CITY HALL.xlsx", skip = 5)
+AQY_AA_204_HOLLYDALE_PARK <- read_excel("~/CEHAT Clinic/AQY AA-204 HOLLYDALE PARK.xlsx", skip = 5)
+AQY_AA_205_SOUTHEAST_SCHOOLS <- read_excel("~/CEHAT Clinic/AQY AA-205 SOUTHEAST SCHOOLS.xlsx", skip = 5)
 
 X9_18_2019_9_00am_Aeroqual_data_2_ <- read_excel("C:/Users/jimzi/Downloads/9_18_2019 9_00am Aeroqual data (2).xlsx")
 test <- data.frame(X9_18_2019_9_00am_Aeroqual_data_2_)
@@ -38,7 +44,7 @@ sensorLocations <- c("City Office", "Hollydale Park","South Gate Park", "Schools
 
 #plot with spatial point values for each sensor; points are diff sizes relative to their vconcentration alue
 ggplot(spdf@data[,c(3,7,8)], aes(Longitude, Latitude)) + 
-        geom_point(aes(size = `cPM2.5..µg.m³.`,color=`cPM2.5..µg.m³.`)) + 
+        geom_point(aes(size = `cPM2.5..Âµg.mÂ³.`,color=`cPM2.5..Âµg.mÂ³.`)) + 
         scale_color_gradient(low='green', high='red') + 
         guides(size=FALSE) +
         geom_text(aes(label=sensorLocations), check_overlap = T, show.legend = F, size = 3, vjust = 2)
@@ -61,7 +67,7 @@ grid.arrange(plot1, plot2, ncol = 2)
 
 #geoR variogram for our points; the points are not very closely correlated
 #classical is good for when you are working with bins
-testVariogramGeoR <- variog(spdf, coords = spdf@coords, data = spdf$`cPM2.5..µg.m³.`, 
+testVariogramGeoR <- variog(spdf, coords = spdf@coords, data = spdf$`cPM2.5..Âµg.mÂ³.`, 
        uvec = "default", breaks = "default",
        trend = "cte", lambda = 1,
        option = "cloud",
@@ -77,7 +83,7 @@ geoFit <- variofit(testVariogramGeoR, cov.model="exponential",
                    ini.cov.pars=init.cov,
                    fix.nugget=FALSE, nugget=0)
 
-plot(testVariogramGeoR, main = "Variogram: cPM2.5 (µg/m³)")
+plot(testVariogramGeoR, main = "Variogram: cPM2.5 (Âµg/mÂ³)")
 lines(geoFit)
 grid()
 
@@ -107,10 +113,10 @@ sg.grid <- SpatialPixels(sg.grid[sg.city,])
 plot(sg.grid)
         
 #Simple Kriging interpolation with the gstat package
-testKrige.gstat <- krige(spdf$`cPM2.5..µg.m³.`~1,spdf,sg.grid)
+testKrige.gstat <- krige(spdf$`cPM2.5..Âµg.mÂ³.`~1,spdf,sg.grid)
 testKrige.gstat$direct <- testKrige.gstat$var1.pred
 
-testKrige.gstat$log <- exp(krige(log(spdf$`cPM2.5..µg.m³.`)~1,spdf,sg.grid)$var1.pred)
+testKrige.gstat$log <- exp(krige(log(spdf$`cPM2.5..Âµg.mÂ³.`)~1,spdf,sg.grid)$var1.pred)
 
 spplot(testKrige.gstat[c("direct","log")],colorkey=TRUE, contour = FALSE,  col.regions = rev(get_col_regions()))
 
@@ -159,17 +165,17 @@ AQY_AA_204_HOLLYDALE_PARK$Time = times4
 AQY_AA_205_SOUTHEAST_SCHOOLS$Time = times5
 
 #divisions are: night from midnight to 6AM. morning from 6Am to noon. afternoon from noon to 6PM. evening from 6pm to midnight
-morning <- subset(AQY_AA_205_SOUTHEAST_SCHOOLS, AQY_AA_205_SOUTHEAST_SCHOOLS$Time$hour>=5 & AQY_AA_205_SOUTHEAST_SCHOOLS$Time$hour <= 11, select = -c(`LAT (°)`,`LONG (°)`))
-afternoon <- subset(AQY_AA_205_SOUTHEAST_SCHOOLS, AQY_AA_205_SOUTHEAST_SCHOOLS$Time$hour>=11 & AQY_AA_205_SOUTHEAST_SCHOOLS$Time$hour <= 17, select = -c(`LAT (°)`,`LONG (°)`))
-evening <- subset(AQY_AA_205_SOUTHEAST_SCHOOLS, AQY_AA_205_SOUTHEAST_SCHOOLS$Time$hour>=17 & AQY_AA_205_SOUTHEAST_SCHOOLS$Time$hour <= 23, select = -c(`LAT (°)`,`LONG (°)`))
-night <- subset(AQY_AA_205_SOUTHEAST_SCHOOLS, AQY_AA_205_SOUTHEAST_SCHOOLS$Time$hour>=0 & AQY_AA_205_SOUTHEAST_SCHOOLS$Time$hour <= 5, select = -c(`LAT (°)`,`LONG (°)`))
+morning <- subset(AQY_AA_205_SOUTHEAST_SCHOOLS, AQY_AA_205_SOUTHEAST_SCHOOLS$Time$hour>=5 & AQY_AA_205_SOUTHEAST_SCHOOLS$Time$hour <= 11, select = -c(`LAT (Â°)`,`LONG (Â°)`))
+afternoon <- subset(AQY_AA_205_SOUTHEAST_SCHOOLS, AQY_AA_205_SOUTHEAST_SCHOOLS$Time$hour>=11 & AQY_AA_205_SOUTHEAST_SCHOOLS$Time$hour <= 17, select = -c(`LAT (Â°)`,`LONG (Â°)`))
+evening <- subset(AQY_AA_205_SOUTHEAST_SCHOOLS, AQY_AA_205_SOUTHEAST_SCHOOLS$Time$hour>=17 & AQY_AA_205_SOUTHEAST_SCHOOLS$Time$hour <= 23, select = -c(`LAT (Â°)`,`LONG (Â°)`))
+night <- subset(AQY_AA_205_SOUTHEAST_SCHOOLS, AQY_AA_205_SOUTHEAST_SCHOOLS$Time$hour>=0 & AQY_AA_205_SOUTHEAST_SCHOOLS$Time$hour <= 5, select = -c(`LAT (Â°)`,`LONG (Â°)`))
 
 #daily Averages
-dailyAvgsOFFICE <- aggregate(AQY_AA_199_SG_CITY_OFFICE$`cPM2.5 (µg/m³)`, list(AQY_AA_199_SG_CITY_OFFICE$Date), mean)
-dailyAvgsPARK <- aggregate(AQY_AA_200_SG_PARK$`cPM2.5 (µg/m³)`, list(AQY_AA_200_SG_PARK$Date), mean)
-dailyAvgsCITYHALL <- aggregate(AQY_AA_202_SG_CITY_HALL$`cPM2.5 (µg/m³)`, list(AQY_AA_202_SG_CITY_HALL$Date), mean)
-dailyAvgsHOLLYDALE <- aggregate(AQY_AA_204_HOLLYDALE_PARK$`cPM2.5 (µg/m³)`, list(AQY_AA_204_HOLLYDALE_PARK$Date), mean)
-dailyAvgsSCHOOLS <- aggregate(AQY_AA_205_SOUTHEAST_SCHOOLS$`cPM2.5 (µg/m³)`, list(AQY_AA_205_SOUTHEAST_SCHOOLS$Date), mean)
+dailyAvgsOFFICE <- aggregate(AQY_AA_199_SG_CITY_OFFICE$`cPM2.5 (Âµg/mÂ³)`, list(AQY_AA_199_SG_CITY_OFFICE$Date), mean)
+dailyAvgsPARK <- aggregate(AQY_AA_200_SG_PARK$`cPM2.5 (Âµg/mÂ³)`, list(AQY_AA_200_SG_PARK$Date), mean)
+dailyAvgsCITYHALL <- aggregate(AQY_AA_202_SG_CITY_HALL$`cPM2.5 (Âµg/mÂ³)`, list(AQY_AA_202_SG_CITY_HALL$Date), mean)
+dailyAvgsHOLLYDALE <- aggregate(AQY_AA_204_HOLLYDALE_PARK$`cPM2.5 (Âµg/mÂ³)`, list(AQY_AA_204_HOLLYDALE_PARK$Date), mean)
+dailyAvgsSCHOOLS <- aggregate(AQY_AA_205_SOUTHEAST_SCHOOLS$`cPM2.5 (Âµg/mÂ³)`, list(AQY_AA_205_SOUTHEAST_SCHOOLS$Date), mean)
 
 
 allAvgs <- cbindX(dailyAvgsOFFICE,dailyAvgsPARK,dailyAvgsCITYHALL,dailyAvgsHOLLYDALE,dailyAvgsSCHOOLS)
@@ -178,27 +184,27 @@ allAvgs <- allAvgs[,-c(3,5,7,9)]
 colnames(allAvgs)<-c("Date","City Office average","Park average","City Hall average","Hollydale Park average","Middle/High School average")
 
 names(dailyAvgsOFFICE)[names(dailyAvgsOFFICE) == "Group.1"] <- "Date"
-names(dailyAvgsOFFICE)[names(dailyAvgsOFFICE)== "x"] <- "PM2.5 (µg/m³) mean"
+names(dailyAvgsOFFICE)[names(dailyAvgsOFFICE)== "x"] <- "PM2.5 (Âµg/mÂ³) mean"
 
 names(dailyAvgsCITYHALL)[names(dailyAvgsCITYHALL) == "Group.1"] <- "Date"
-names(dailyAvgsCITYHALL)[names(dailyAvgsCITYHALL)== "x"] <- "PM2.5 (µg/m³) mean"
+names(dailyAvgsCITYHALL)[names(dailyAvgsCITYHALL)== "x"] <- "PM2.5 (Âµg/mÂ³) mean"
 
 names(dailyAvgsPARK)[names(dailyAvgsPARK) == "Group.1"] <- "Date"
-names(dailyAvgsPARK)[names(dailyAvgsPARK)== "x"] <- "PM2.5 (µg/m³) mean"
+names(dailyAvgsPARK)[names(dailyAvgsPARK)== "x"] <- "PM2.5 (Âµg/mÂ³) mean"
 
 names(dailyAvgsHOLLYDALE)[names(dailyAvgsHOLLYDALE) == "Group.1"] <- "Date"
-names(dailyAvgsHOLLYDALE)[names(dailyAvgsHOLLYDALE)== "x"] <- "PM2.5 (µg/m³) mean"
+names(dailyAvgsHOLLYDALE)[names(dailyAvgsHOLLYDALE)== "x"] <- "PM2.5 (Âµg/mÂ³) mean"
 
 names(dailyAvgsSCHOOLS)[names(dailyAvgsSCHOOLS) == "Group.1"] <- "Date"
-names(dailyAvgsSCHOOLS)[names(dailyAvgsSCHOOLS)== "x"] <- "PM2.5 (µg/m³) mean"
+names(dailyAvgsSCHOOLS)[names(dailyAvgsSCHOOLS)== "x"] <- "PM2.5 (Âµg/mÂ³) mean"
 
 
-plot(dailyAvgs$`cPM2.5 (µg/m³) mean`~as.Date(dailyAvgs$Date,"%Y/%m%/d%"), type="l", 
-     xlab="Date", ylab=" (µg/m³)",
+plot(dailyAvgs$`cPM2.5 (Âµg/mÂ³) mean`~as.Date(dailyAvgs$Date,"%Y/%m%/d%"), type="l", 
+     xlab="Date", ylab=" (Âµg/mÂ³)",
      main="Average Daily PM2.5 Concentrations")
 
 plot(allAvgs$`Middle/High School average`~as.Date(allAvgs$Date,"%Y/%m%/d%"), type="l", 
-     xlab="Date", ylab=" (µg/m³)",
+     xlab="Date", ylab=" (Âµg/mÂ³)",
      main="Average Daily PM2.5 Concentrations",
      lwd = 1.5)
 lines(allAvgs$Date, allAvgs$`City Office average`, pch = 18, col = "brown", type = "l", lty = 1, lwd=1.5)
@@ -223,13 +229,13 @@ legend("topleft",
 morning$Date <- as.Date(morning$Time,"%Y/%m/%d")
 
 #create averages for the morning division
-morningAvgs <- aggregate(morning$`cPM2.5 (µg/m³)`, list(morning$Date), mean)
+morningAvgs <- aggregate(morning$`cPM2.5 (Âµg/mÂ³)`, list(morning$Date), mean)
 
 #making morning plots
 names(morningAvgs)[names(morningAvgs) == "Group.1"] <- "Date"
 names(morningAvgs)[names(morningAvgs)== "x"] <- "cPM2.5 (?g/m?) mean"
 plot(morningAvgs$`cPM2.5 (?g/m?) mean`~as.Date(morningAvgs$Date,"%Y/%m%/d%"), type="l", 
-     xlab="Date", ylab=" PM2.5 (µg/m³)",
+     xlab="Date", ylab=" PM2.5 (Âµg/mÂ³)",
      main="Average PM2.5 Concentrations in the Morning")
 grid()
 
